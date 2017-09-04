@@ -1,0 +1,7 @@
+[client]
+database = web
+user = yourusername
+password = yourpassword
+default-character-set = utf-8
+host = youraddress # like 127.0.0.1, i use 192.128.10.130
+port = 3306

@@ -1,0 +1,86 @@
+{% load staticfiles %}
+<!DOCTYPE>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>{% block title %}Home{% endblock %} - Chii's</title>
+    {% block csses %}
+    <!-- <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous"> -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/site.css' %}">
+    <link rel="stylesheet" href="{% static 'css/jquery-confirm.min.css' %}">
+    {% endblock %}
+</head>
+<body>
+    {% block top-nav %}
+    <nav class="navbar navbar-inverse" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="/" class="navbar-brand">Deal !</a>
+            </div>
+            <div class="collapse navbar-collapse">
+                <!-- <ul class="nav navbar-nav">
+                    <li></li>
+                </ul> -->
+                <ul class="nav navbar-nav navbar-right">
+                    {% if user.is_authenticated %}
+                    <li><a href="#">{{ user.username }}</a></li>
+                    <li><a href="{% url 'carts' %}">购物车</a></li>
+                    <li><a href="{% url 'orders' %}">订单</a></li>
+                    <li><a href="{% url 'logout' %}">Sigh Out</a></li>
+                    {% else %}
+                    <li><a href="{% url 'login' %}">Sigh In</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endblock %}
+    
+    <div class="container message">
+    {% for e in errors %}
+    <div class="alert alert-warning alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{ e }}
+    </div>
+    {% endfor %}
+
+    {% for i in infos %}
+    <div class="alert alert-info alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{ i }}
+    </div>
+    {% endfor %}
+    </div>
+
+    {% block content %}
+    {% endblock %}
+
+    {% block scripts %}
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <!-- <script src="https://cdn.bootcss.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-h0AbiXch4ZDo7tp9hKZ4TsHbi047NrKGLO3SEJAg45jXxnGIfYzk4Si90RDIqNm1" crossorigin="anonymous"></script> -->
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/mp.mansory.min.js' %}"></script>
+    <script src="{% static 'js/jquery-confirm.min.js' %}"></script>
+    <script>
+        (function(){
+        if(localStorage.info){
+            $(".message").append(
+            "<div class='alert alert-info alert-dismissible' role='alert'><button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button>"
+            + localStorage.info + "</div>"
+            );
+            localStorage.removeItem("info");
+        }
+    })();
+    </script>
+    {% endblock %}
+</body>
+</html>

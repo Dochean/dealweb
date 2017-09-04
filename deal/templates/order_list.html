@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+<div class="container">
+    <input type="text" class="hidden money" name="{{ money }}">
+    {% for order_list in order_lists %}
+    <div class="panel panel-default">
+        <div class="panel-heading" name="{{ order_list.id }}">订单号： {{ order_list.id }}</div>
+        <div class="panel-body">
+            <p>您的收货地址。待开发，敬请期待。</p>
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>数量</th>
+                    <th>总价</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in order_list.orders.all %}
+                <tr>
+                    <td>{{ order.good.name }}</td>
+                    <td>{{ order.count }}</td>
+                    <td>{{ order.ap }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="panel-footer">总价：¥{{ order_list.ap }}
+            <div class="btn-group" role="group">
+                {% if order_list.status == 0 %}
+                <button class="btn btn-default pay" name="{{ order_list.id }}">去支付</button>
+                <button class="btn btn-default del-order" name="{{ order_list.id }}">删除订单</button>
+                {% endif %}
+
+                {% if order_list.status == 1 %}
+                <button class="btn btn-default recv">确认收货</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>Nothing you've bought.</p>
+    {% endfor %}
+    <!-- <div><button>下单</button></div> -->
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{{ block.super }}
+<script>
+$(document).ready(function(){
+    $('.recv').click(function(){
+        $.alert({
+            title: '提示',
+            content: '功能开发中，敬请期待。',
+        });
+    });
+
+    $('.pay').click(function(){
+        var pay = $(this);
+        $.confirm({
+            title:'提示',
+            content: '您的余额为：¥' + $('.money').attr('name') +'，是否确认支付',
+            buttons: {
+                cancel: {
+                    //closed.
+                    text: '取消',
+                    keys: ['esc', ],
+                    action: function(){
+                        //
+                    },
+                },
+                buy: {
+                    text: '确定',
+                    btnClass: 'btn-blue',
+                    keys: ['enter', ],
+                    action: function(){
+                        //
+                        $.ajax({
+                            url: '/clear-order/',
+                            type: 'get',
+                            data: {
+                                id: pay.attr('name'),
+                            },
+                            success: function(data){
+                                data = JSON.parse(data);
+                                if(data.au=="true"){
+                                    if(data.op=="true"){
+                                        localStorage.info = "clear order successfully!";
+                                        window.location.href = '/orders/';
+                                        // $(window).scrollTop(0);
+                                    }else{
+                                        localStorage.info = "Failed to clear order!";
+                                        window.location.reload();
+                                        $(window).scrollTop(0);
+                                    }
+                                }else{
+                                    window.location.href = '/login/';
+                                }
+                            },
+                            error: function(){
+                                console.log('clear order failed.');
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    });
+
+    $('.del-order').click(function(){
+        var pay = $(this);
+        $.confirm({
+            title:'提示',
+            content: '确定删除此订单？',
+            buttons: {
+                cancel: {
+                    //closed.
+                    text: '取消',
+                    keys: ['esc', ],
+                    action: function(){
+                        //
+                    },
+                },
+                buy: {
+                    text: '确定',
+                    btnClass: 'btn-blue',
+                    keys: ['enter', ],
+                    action: function(){
+                        //
+                        $.ajax({
+                            url: '/del-order/',
+                            type: 'get',
+                            data: {
+                                id: pay.attr('name'),
+                            },
+                            success: function(data){
+                                data = JSON.parse(data);
+                                if(data.au=="true"){
+                                    if(data.op=="true"){
+                                        localStorage.info = "del order successfully!";
+                                        window.location.href = '/orders/';
+                                        // $(window).scrollTop(0);
+                                    }else{
+                                        localStorage.info = "Failed to del order!";
+                                        window.location.reload();
+                                        $(window).scrollTop(0);
+                                    }
+                                }else{
+                                    window.location.href = '/login/';
+                                }
+                            },
+                            error: function(){
+                                console.log('del order failed.');
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1>{{ user.username }} 的购物车 <a role='button' class="btn btn-default pull-right" href="#" id="order">下单</a><a role='button' class="btn btn-default pull-right" href="#" id="edit">编辑</a><a role='button' class="btn btn-default pull-right hidden" href="#" id="save">保存</a><a role='button' class="btn btn-default pull-right hidden" href="#" id="cancel">取消</a></h1>
+    </div>
+    <table class="table table-hover" id="masonry">
+        <thead>
+            <tr>
+                <th>货物名称</th>
+                <th class=""></th>
+                <th style="text-align:center;">数量</th>
+                <th class=""></th>
+                <th style="text-align:center;">总价</th>
+                <th style="text-align:center;">-</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for cart in carts %}
+        <tr>
+            <td>{{ cart.good.name }}</td>
+            <td><span class="input-group-btn minus hidden"><button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button></span></td>
+            <td style="text-align:center;">
+                <span class="count">{{ cart.count }}</span>
+                <input type="text" class="form-control hidden" name="{{ cart.good.id }}" value="{{ cart.count }}" style="text-align:center;" onkeyup="value=value.replace(/[^\d]/g, '1')">
+                <!-- <div class="input-group hidden" role="group">
+                    <span class="input-group-btn minus"><button class="btn btn-default"><span class="glyphicon glyphicon-minus"></span></button></span>
+                    <input type="text" class="form-control" name="{{ good.id }}" value="{{ cart.count }}" style="text-align:center;" onkeyup="value=value.replace(/[^\d]/g, '1')">
+                    <span class="input-group-btn plus"><button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></span>
+                </div> -->
+                <!-- <div class="btn-group hidden" role="group">
+                    <button class="btn btn-default"><span class="glyphicon glyphicon-minus" aria-hidden="true"></span>Minus</button>
+                    <button class="btn btn-default">minus</button>
+                    <button class="btn btn-default">{{ cart.count }}</button>
+                    <button class="btn btn-default">plus</button>
+                    <button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span> </button>
+                </div> -->
+            </td>
+            <td><span class="input-group-btn plus hidden"><button class="btn btn-default"><span class="glyphicon glyphicon-plus"></span></button></span></td>
+            <td style="text-align:center;">{{ cart.ap }}</td>
+            <td>
+                <button class="btn btn-default del" name="{{ cart.id }}">删除</button>
+                <!-- <button class="btn btn-default">下单</button> -->
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td>Nothing</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+{{ block.super }}
+<script>
+// $(document).ready(function() {
+//     $('#masonry').masonry({
+//         itemSelector: '.item',
+//     });
+// });
+
+$(document).ready(function(){
+    $("#edit").click(function(){
+        $(".count").removeClass("show").addClass("hidden");
+        $(".input-group-btn").removeClass("hidden").addClass("show");
+        $(".button-help").removeClass("hidden").addClass("show");
+        $('input').removeClass("hidden").addClass("show");
+        $("#edit").removeClass("show").addClass("hidden");
+        $("#save").removeClass("hidden").addClass("show");
+        $("#cancel").removeClass("hidden").addClass("show");
+    });
+
+    $("#cancel").click(function(){
+        $(".count").removeClass("hidden").addClass("show");
+        $(".input-group-btn").removeClass("show").addClass("hidden");
+        $(".button-help").removeClass("show").addClass("hidden");
+        $("input").removeClass("show").addClass("hidden");
+        $("#edit").removeClass("hidden").addClass("show");
+        $("#save").removeClass("show").addClass("hidden");
+        $("#cancel").removeClass("show").addClass("hidden");
+
+        $('input').each(function(i, e){
+            var pre = $(this).prev();
+            $(this).val(pre.text());
+        });
+    });
+
+    $("#save").click(function(){
+        $(".count").removeClass("hidden").addClass("show");
+        $(".input-group-btn").removeClass("show").addClass("hidden");
+        $(".button-help").removeClass("show").addClass("hidden");
+        $("input").removeClass("show").addClass("hidden");
+        $("#edit").removeClass("hidden").addClass("show");
+        $("#save").removeClass("show").addClass("hidden");
+        $("#cancel").removeClass("show").addClass("hidden");
+
+        var da = {};
+        $('input').each(function(i, e){
+            da[$(this).attr("name")] = $(this).val();
+        });
+        //console.log(data);
+
+        $.ajax({
+            url: '/save-carts/',
+            type: 'get',
+            data: da,
+            success: function(data){
+                data = JSON.parse(data);
+                if(data.au=="true"){
+                    if(data.op=="true"){
+                        localStorage.info = "save cart successfully!";
+                        window.location.reload();
+                        $(window).scrollTop(0);
+                    }else{
+                        localStorage.info = "Failed to save cart!";
+                        window.location.reload();
+                        $(window).scrollTop(0);
+                    }
+                }else{
+                    window.location.href = '/login/';
+                }
+            },
+            error: function(){
+                console.log('add good failed.');
+            }
+        });
+    });
+
+    $(".del").click(function(){
+        var id = $(this).attr("name");
+
+        $.ajax({
+            url: '/del-good/',
+            type: 'get',
+            data: {
+                id: id,
+            },
+            success: function(data){
+                data = JSON.parse(data);
+                if(data.au=="true"){
+                    if(data.op=="true"){
+                        localStorage.info = "del cart successfully!";
+                        window.location.reload();
+                        $(window).scrollTop(0);
+                    }else{
+                        localStorage.info = "Failed to del cart!";
+                        window.location.reload();
+                        $(window).scrollTop(0);
+                    }
+                }else{
+                    window.location.href = '/login/';
+                }
+            },
+            error: function(){
+                console.log('del good failed.');
+            }
+        });
+    });
+
+    $("#order").click(function(){
+        $.ajax({
+            url: '/create-order/',
+            type: 'get',
+            success: function(data){
+                data = JSON.parse(data);
+                if(data.au=="true"){
+                    if(data.op=="true"){
+                        localStorage.info = "create order successfully!";
+                        window.location.href = '/orders/';
+                        // $(window).scrollTop(0);
+                    }else{
+                        localStorage.info = "Failed to create order!";
+                        window.location.reload();
+                        $(window).scrollTop(0);
+                    }
+                }else{
+                    window.location.href = '/login/';
+                }
+            },
+            error: function(){
+                console.log('create order failed.');
+            }
+        });
+    });
+
+    $("input").blur(function(){
+        if($(this).val()==""){
+            $(this).val('1');
+        }
+    });
+
+    $(".plus").click(function(){
+        var c = $(this).parent().prev().children().first().next();
+        var v = Number(c.val());
+        c.val((v+1).toString());
+    });
+
+    $(".minus").click(function(){
+        var c = $(this).parent().next().children().first().next();
+        var v = Number(c.val()) - 1;
+        if(v<1){
+            v = 1;
+        }
+        c.val(v.toString());
+    });
+});
+
+</script>
+{% endblock %}
